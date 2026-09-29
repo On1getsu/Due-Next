@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Due Next</title>
+<meta name="description" content="Keep track of assignments and never miss a due date.">
+<meta name="theme-color" content="#2b4fd8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Due Next">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Due Next</h1>
+      <p class="sub" id="today"></p>
+    </div>
+    <button type="button" class="ghost" id="menu-btn" aria-expanded="false" aria-controls="menu">Settings</button>
+  </header>
+
+  <div class="menu" id="menu" hidden>
+    <div class="menu-row">
+      <div>
+        <b>Reminders</b>
+        <p class="note" id="notif-status">Get a notification when something is due within 24 hours (checked whenever the app is open).</p>
+      </div>
+      <button type="button" class="ghost" id="notif-btn">Turn on</button>
+    </div>
+    <div class="menu-row">
+      <div>
+        <b>Backup</b>
+        <p class="note">Your list is stored on this device only. Save a backup file now and then, or use it to move your list to another device.</p>
+      </div>
+      <div class="btns">
+        <button type="button" class="ghost" id="export-btn">Save backup</button>
+        <label class="ghost filebtn">Restore<input type="file" id="import-file" accept="application/json,.json"></label>
+      </div>
+    </div>
+    <p class="err" id="menu-msg" hidden></p>
+  </div>
+
+  <div class="strip" aria-label="Summary">
+    <div class="stat late"><b id="s-late" class="mono">0</b><span>Overdue</span></div>
+    <div class="stat soon"><b id="s-soon" class="mono">0</b><span>Due in 48 hrs</span></div>
+    <div class="stat"><b id="s-open" class="mono">0</b><span>Still to do</span></div>
+  </div>
+
+  <form id="add" autocomplete="off">
+    <label class="full">What's the assignment?
+      <input id="f-title" required maxlength="140" placeholder="e.g. Chapter 4 reading questions">
+    </label>
+    <label>Class
+      <input id="f-course" list="courses" maxlength="40" placeholder="e.g. Biology">
+      <datalist id="courses"></datalist>
+    </label>
+    <div class="row2">
+      <label>Due date<input id="f-date" type="date" required></label>
+      <label>Time<input id="f-time" type="time" value="23:59"></label>
+    </div>
+    <div class="quick full" aria-label="Quick due dates">
+      <button type="button" class="chipbtn" data-days="0">Today</button>
+      <button type="button" class="chipbtn" data-days="1">Tomorrow</button>
+      <button type="button" class="chipbtn" data-days="2">In 2 days</button>
+      <button type="button" class="chipbtn" data-days="7">Next week</button>
+    </div>
+    <label class="full check-label"><input type="checkbox" id="f-cal"> Also add to my phone's calendar (alerts 1 day and 3 hours before)</label>
+    <p class="err full" id="f-err" hidden></p>
+    <button class="primary full" type="submit">Add assignment</button>
+  </form>
+
+  <div class="toolbar" id="filters" aria-label="Filter by class"></div>
+
+  <div id="list"></div>
+</div>
+
+<div class="toast" id="toast" hidden><span id="toast-msg"></span><button id="toast-undo" type="button">Undo</button></div>
+
+<script src="app.js"></script>
+</body>
+</html>
