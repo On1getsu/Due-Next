@@ -35,6 +35,14 @@ button,input,select{font:inherit}
 .btns{display:flex;gap:8px;flex-wrap:wrap}
 .note{font-size:.85rem;color:var(--muted);margin:2px 0 0}
 
+.menu-block{display:flex;flex-direction:column;gap:10px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.primary.wide{width:100%}
+.or{text-align:center;margin:0}
+.email-form{display:flex;flex-direction:column;gap:10px}
+.sync{font-size:.8rem;font-weight:700;padding:1px 8px;border-radius:999px;white-space:nowrap}
+.sync.on{background:var(--ok-bg);color:var(--ok)}
+.sync.off{background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+.sync.wait{background:var(--soon-bg);color:var(--soon)}
 .strip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
 .stat b{font-family:var(--f-display);font-size:1.75rem;line-height:1.1}

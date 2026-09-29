@@ -20,12 +20,35 @@
   <header class="top">
     <div>
       <h1>Due Next</h1>
-      <p class="sub" id="today"></p>
+      <p class="sub"><span id="today"></span> <span class="sync" id="sync-status" hidden></span></p>
     </div>
     <button type="button" class="ghost" id="menu-btn" aria-expanded="false" aria-controls="menu">Settings</button>
   </header>
 
   <div class="menu" id="menu" hidden>
+    <div class="menu-block" id="account">
+      <b>Sync across devices</b>
+      <p class="note" id="acct-note">Checking…</p>
+
+      <div id="acct-out" hidden>
+        <form id="email-form" class="email-form" autocomplete="on">
+          <label>Email<input id="acct-email" type="email" autocomplete="email" required></label>
+          <label>Password<input id="acct-pw" type="password" autocomplete="current-password" minlength="6" required></label>
+          <div class="btns">
+            <button type="submit" class="ghost" data-mode="in">Sign in</button>
+            <button type="submit" class="ghost" data-mode="up">Create account</button>
+            <button type="button" class="link" id="reset-btn">Forgot password?</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="acct-in" class="menu-row" hidden>
+        <p class="note" id="acct-who"></p>
+        <button type="button" class="ghost" id="signout-btn">Sign out</button>
+      </div>
+      <p class="err" id="acct-msg" hidden></p>
+    </div>
+
     <div class="menu-row">
       <div>
         <b>Reminders</b>
@@ -36,7 +59,7 @@
     <div class="menu-row">
       <div>
         <b>Backup</b>
-        <p class="note">Your list is stored on this device only. Save a backup file now and then, or use it to move your list to another device.</p>
+        <p class="note">Save your list as a file, or bring a saved list back. Handy before switching phones.</p>
       </div>
       <div class="btns">
         <button type="button" class="ghost" id="export-btn">Save backup</button>
@@ -82,6 +105,6 @@
 
 <div class="toast" id="toast" hidden><span id="toast-msg"></span><button id="toast-undo" type="button">Undo</button></div>
 
-<script src="app.js"></script>
+<script type="module" src="app.js"></script>
 </body>
 </html>

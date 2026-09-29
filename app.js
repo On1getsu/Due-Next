@@ -7,6 +7,9 @@
   let items = load();
   let filter = "All";
   let confirmId = null;
+  let cloud = null;           // set once sync is configured
+  let friendlyErr = (e) => (e && e.message) || "Something went wrong.";
+  let mergeOnSignIn = false;  // upload this device's list only after a deliberate sign-in
 
   // ---------- storage (on this device) ----------
   function load() {
@@ -17,12 +20,19 @@
     try { localStorage.setItem(STORE, JSON.stringify(items)); } catch (e) {}
     render();
   }
+  // When signed in, every change is also sent to the cloud. Firebase queues it
+  // while offline and sends it when the connection comes back.
+  function cloudDo(fn) {
+    if (!cloud || !cloud.user) return;
+    fn().catch((err) => showAcctMsg(friendlyErr(err)));
+  }
   function upsert(item) {
     const i = items.findIndex((x) => x.id === item.id);
     if (i < 0) items.push(item); else items[i] = item;
     persist();
+    cloudDo(() => cloud.save(item));
   }
-  function removeItem(id) { items = items.filter((x) => x.id !== id); persist(); }
+  function removeItem(id) { items = items.filter((x) => x.id !== id); persist(); cloudDo(() => cloud.remove(id)); }
   function newId() { return "a" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 
   // ---------- dates ----------
@@ -282,6 +292,7 @@
       for (const x of valid) byId.set(x.id, x);
       items = [...byId.values()];
       persist();
+      cloudDo(() => cloud.saveMany(valid));
       msg.hidden = true;
       toast("Restored " + valid.length + " assignment" + (valid.length === 1 ? "" : "s") + ".", false);
     } catch (err) {
@@ -291,10 +302,84 @@
     e.target.value = "";
   });
 
+  // ---------- account + sync ----------
+  function showAcctMsg(text) { const m = $("#acct-msg"); m.textContent = text || ""; m.hidden = !text; }
+  function setSync(state) {
+    const s = $("#sync-status");
+    s.hidden = false;
+    s.className = "sync " + state;
+    s.textContent = state === "on" ? "Synced" : state === "wait" ? "Syncing…" : "This device only";
+  }
+  function authAction(fn) {
+    return async () => {
+      showAcctMsg("");
+      mergeOnSignIn = true;
+      try { await fn(); } catch (err) { mergeOnSignIn = false; showAcctMsg(friendlyErr(err)); }
+    };
+  }
+
+  async function setupSync() {
+    let config = null;
+    try { ({ firebaseConfig: config } = await import("./config.js")); } catch (e) {}
+    if (!config) {
+      $("#acct-note").textContent = "Syncing isn't set up yet. Follow “Turn on syncing” in the README, then your list will match on every device.";
+      setSync("off");
+      return;
+    }
+    $("#acct-note").textContent = "Sign in on each device with the same account to see the same list everywhere.";
+    let mod;
+    try {
+      mod = await import("./cloud.js");
+      friendlyErr = mod.friendly;
+      cloud = await mod.startCloud(config, {
+        onUser(u) {
+          $("#acct-out").hidden = !!u;
+          $("#acct-in").hidden = !u;
+          if (!u) { setSync("off"); return; }
+          $("#acct-who").textContent = "Signed in as " + (u.email || u.name || "you") + ". Your list syncs automatically.";
+          setSync("wait");
+          if (mergeOnSignIn) {
+            mergeOnSignIn = false;
+            const local = items.slice();
+            cloud.mergeLocal(local).then((n) => { if (n) toast("Added " + n + " assignment" + (n === 1 ? "" : "s") + " from this device to your account.", false); })
+              .catch((err) => showAcctMsg(friendlyErr(err)));
+          }
+        },
+        onItems(list, pending) {
+          items = list;
+          persist();
+          setSync(pending ? "wait" : "on");
+          checkReminders();
+        },
+        onError(msg) { showAcctMsg(msg); },
+      });
+    } catch (e) {
+      $("#acct-note").textContent = "Couldn't connect to sync right now (are you offline?). Your list still works on this device.";
+      setSync("off");
+      return;
+    }
+    $("#email-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const email = $("#acct-email").value.trim(), pw = $("#acct-pw").value;
+      const mode = e.submitter && e.submitter.dataset.mode;
+      authAction(() => mode === "up" ? cloud.signUpEmail(email, pw) : cloud.signInEmail(email, pw))();
+    });
+    $("#reset-btn").addEventListener("click", async () => {
+      const email = $("#acct-email").value.trim();
+      if (!email) { showAcctMsg("Type your email above first, then tap Forgot password."); return; }
+      try { await cloud.resetPassword(email); showAcctMsg(""); toast("Password reset email sent to " + email + ".", false); }
+      catch (err) { showAcctMsg(friendlyErr(err)); }
+    });
+    $("#signout-btn").addEventListener("click", async () => {
+      try { await cloud.signOut(); toast("Signed out. Your list stays on this device.", false); } catch (err) { showAcctMsg(friendlyErr(err)); }
+    });
+  }
+
   // ---------- boot ----------
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
   render();
   checkReminders();
+  setupSync();
   setInterval(() => { render(); checkReminders(); }, 60000);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) { render(); checkReminders(); } });
 })();
