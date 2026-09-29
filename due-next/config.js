@@ -14,4 +14,13 @@
 //   appId: "1:1234567890:web:abc123",
 // };
 
-export const firebaseConfig = null;
+export const firebaseConfig = {
+  apiKey: "AIzaSyCkjvP4frxOvK1Q-OjEqeNeDTiharZRDes",
+  authDomain: "due-next.firebaseapp.com",
+  databaseURL: "https://due-next-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "due-next",
+  storageBucket: "due-next.firebasestorage.app",
+  messagingSenderId: "775476236205",
+  appId: "1:775476236205:web:25988e2ddcac94b8e59b24",
+  measurementId: "G-K3X00XFEPX"
+};
